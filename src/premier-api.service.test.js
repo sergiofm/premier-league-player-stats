@@ -1,9 +1,7 @@
 const superagent = require('superagent');
 const {BASE_URL, getApiResults, flattenResult, getPlayersStats} = require('./premier-api.service');
 
-jest.mock('superagent', () => ({
-  get: jest.fn()
-}));
+jest.mock('superagent');
 
 describe('Premier API Service', () => {
 

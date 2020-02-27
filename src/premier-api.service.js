@@ -2,10 +2,13 @@ const superagent = require('superagent');
 
 const PAGE_SIZE = 100;
 const BASE_URL = `https://footballapi.pulselive.com/football/stats/ranked/players/goals?pageSize=${PAGE_SIZE}&comps=1&compCodeForActivePlayer=EN_PR&altIds=true&page=`;
+const ORIGIN_HEADER = "origin";
+const ORIGIN_HEADER_VALUE = "https://www.premierleague.com";
 
 const getApiResults = async (pageNumber = 0) => {
   console.log('Scrapping page', pageNumber);
-  const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = await superagent.get(BASE_URL+pageNumber).catch(err => ({err}));
+  const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = 
+    await superagent.get(BASE_URL+pageNumber).set(ORIGIN_HEADER, ORIGIN_HEADER_VALUE).catch(err => ({err}));
 
   if(err) return { err };
   if(!pageInfo || !content) return { err: 'Invalid API result' };
