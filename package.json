@@ -1,0 +1,25 @@
+{
+  "name": "premier-league-player-stats",
+  "version": "1.0.0",
+  "description": "Premier League Player Stats Scrapper",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sergiofm/premier-league-player-stats.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sergiofm/premier-league-player-stats/issues"
+  },
+  "homepage": "https://github.com/sergiofm/premier-league-player-stats#readme",
+  "dependencies": {
+    "json2csv": "^4.5.4",
+    "superagent": "^5.2.2"
+  }
+}
