@@ -1,6 +1,6 @@
 const superagent = require('superagent');
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 const BASE_URL = `https://footballapi.pulselive.com/football/stats/ranked/players/goals?pageSize=${PAGE_SIZE}&comps=1&compCodeForActivePlayer=EN_PR&altIds=true&page=`;
 const ORIGIN_HEADER = "origin";
 const ORIGIN_HEADER_VALUE = "https://www.premierleague.com";
@@ -12,13 +12,13 @@ const getApiResults = async (pageNumber = 0) => {
 
   if(err) return { err };
   if(!pageInfo || !content) return { err: 'Invalid API result' };
-/*
+
   if(pageNumber < pageInfo.numPages - 1) {
     const nextPageContent = await getApiResults(pageNumber + 1);
     if(nextPageContent.err) return { err: nextPageContent.err };
     return [...content, ...nextPageContent];
   }
-*/
+
   return content;
 };
 
