@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -21,5 +22,8 @@
   "dependencies": {
     "json2csv": "^4.5.4",
     "superagent": "^5.2.2"
+  },
+  "devDependencies": {
+    "jest": "^25.1.0"
   }
 }

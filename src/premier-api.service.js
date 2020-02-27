@@ -1,11 +1,14 @@
+const superagent = require('superagent');
+
 const PAGE_SIZE = 100;
 const BASE_URL = `https://footballapi.pulselive.com/football/stats/ranked/players/goals?pageSize=${PAGE_SIZE}&comps=1&compCodeForActivePlayer=EN_PR&altIds=true&page=`;
 
 const getApiResults = async (pageNumber = 0) => {
   console.log('Scrapping page', pageNumber);
-  const {body: {stats: {pageInfo, content}}, err} = await superagent.get(BASE_URL+pageNumber).catch(err => ({err}));
+  const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = await superagent.get(BASE_URL+pageNumber).catch(err => ({err}));
 
   if(err) return { err };
+  if(!pageInfo || !content) return { err: 'Invalid API result' };
 
   if(pageNumber < pageInfo.numPages - 1) {
     const nextPageContent = await getApiResults(pageNumber + 1);
@@ -17,8 +20,8 @@ const getApiResults = async (pageNumber = 0) => {
 };
 
 const flattenResult = result => {
-  const { owner: { birth, name }, rank = 0, value: goals = 0 } = result;
-  if (!birth || !birth.country || !name) return { err: "Inválid result"};
+  const { owner: { birth, name } = {}, rank = 0, value: goals = 0 } = result;
+  if (!birth || !birth.country || !name) return { err: "Invalid result"};
   return {
     rank, 
     name: name.display,
@@ -29,11 +32,13 @@ const flattenResult = result => {
 
 const getPlayersStats = async () => {
   const results = await getApiResults();
+  if(results.err) return results;
   return results.map(flattenResult).filter(({err}) => !err);
 };
 
 module.exports = {
+  BASE_URL,
   getApiResults,
   flattenResult,
   getPlayersStats
-}
+};
