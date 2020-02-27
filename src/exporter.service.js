@@ -1,25 +1,18 @@
-const fs = require('fs');
-const { parse } = require("json2csv");
+const XLSX = require('xlsx');
 
-const writeJsonArrayToCSVFile = (jsonArray, fields, filename) => {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filename, parse(jsonArray, { fields }), 'utf8', err => {
-      if (err) return reject(err);
-      resolve('OK');
-    });
+const FILENAME = "statistics.xlsx";
+
+const exportStatsToXLSX = async (playersStats, nationalitiesStats) => {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(playersStats), "Players");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(nationalitiesStats), "Nationalities");
+  return await XLSX.writeFile(wb, FILENAME, {
+    Props: {
+      Author: "Sergio Mendonça"
+    }
   });
-  
-};
-
-const exportPlayersStats = async (stats, fields) => {
-  return await writeJsonArrayToCSVFile(stats, fields, 'players.csv');
-};
-
-const exportNationalitiesStats = async (stats, fields) => {
-  return await writeJsonArrayToCSVFile(stats, fields, 'nationalities.csv');
 };
 
 module.exports = {
-  exportPlayersStats,
-  exportNationalitiesStats
-}
+  exportStatsToXLSX
+};

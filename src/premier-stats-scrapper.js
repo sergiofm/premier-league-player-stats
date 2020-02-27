@@ -1,8 +1,5 @@
 const { getPlayersStats } = require('./premier-api.service');
-const { exportPlayersStats, exportNationalitiesStats } = require('./exporter.service');
-
-const playersStatsFields = ["rank", "name", "nationality", "goals"];
-const nationalitiesStatsFields = ["name", "bestPlayerRank", "worstPlayerRank", "totalPlayers", "bestPlayerGoals", "worstPlayerGoals", "totalGoals"];
+const { exportStatsToXLSX } = require('./exporter.service');
 
 const sortByRank =  (a, b) => {
   return a.rank - b.rank;
@@ -44,33 +41,23 @@ const exportStats = async () => {
     return;
   }
 
-  console.log('Exporting Players Stats...');
-  const playersExportResult = await exportPlayersStats(playersStats.sort(sortByRank), playersStatsFields).catch(err => ({err}));
-
-  if (playersExportResult.err) {
-    console.error('Error trying to export players stats', playersExportResult.err);
-    return;
-  }
-
-  console.log('Players Stats Exported Successfully!');
-
   const nationalitiesStatsMap = playersStats.reduce(mapStats, {});
   const nationalitiesStats = Object.values(nationalitiesStatsMap).sort(sortByName);
 
-  console.log('Exporting Nationalities Stats...');
-  const nationalitiesExportResult = await exportNationalitiesStats(nationalitiesStats, nationalitiesStatsFields).catch(err => ({
+  console.log('Exporting Players Stats...');
+  const exportResult = await exportStatsToXLSX(playersStats.sort(sortByRank), nationalitiesStats).catch(err => ({
     err
   }));
 
-  if (nationalitiesExportResult.err) {
-    console.error('Error trying to export nationalities stats', nationalitiesExportResult.err);
+  if (exportResult && exportResult.err) {
+    console.error('Error trying to export stats', exportResult.err);
     return;
   }
 
-  console.log('Nationalities Stats Exported Successfully!');
+  console.log('Stats Exported Successfully!');
 };
 
 module.exports = {
   exportStats
-}
+};
 

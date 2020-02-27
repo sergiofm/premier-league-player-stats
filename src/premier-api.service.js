@@ -12,13 +12,13 @@ const getApiResults = async (pageNumber = 0) => {
 
   if(err) return { err };
   if(!pageInfo || !content) return { err: 'Invalid API result' };
-
+/*
   if(pageNumber < pageInfo.numPages - 1) {
     const nextPageContent = await getApiResults(pageNumber + 1);
     if(nextPageContent.err) return { err: nextPageContent.err };
     return [...content, ...nextPageContent];
   }
-
+*/
   return content;
 };
 
