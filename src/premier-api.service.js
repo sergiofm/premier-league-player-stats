@@ -1,14 +1,13 @@
-const superagent = require('superagent');
+const request = require('./request.service');
 
 const PAGE_SIZE = 500;
 const BASE_URL = `https://footballapi.pulselive.com/football/stats/ranked/players/goals?pageSize=${PAGE_SIZE}&comps=1&compCodeForActivePlayer=EN_PR&altIds=true&page=`;
-const ORIGIN_HEADER = "origin";
-const ORIGIN_HEADER_VALUE = "https://www.premierleague.com";
+const HEADERS = { origin: "https://www.premierleague.com" };
 
 const getApiResults = async (pageNumber = 0) => {
   console.log('Scrapping page', pageNumber);
   const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = 
-    await superagent.get(BASE_URL+pageNumber).set(ORIGIN_HEADER, ORIGIN_HEADER_VALUE).catch(err => ({err}));
+    await request.get(BASE_URL+pageNumber, HEADERS).catch(err => ({err}));
 
   if(err) return { err };
   if(!pageInfo || !content) return { err: 'Invalid API result' };
@@ -41,6 +40,7 @@ const getPlayersStats = async () => {
 
 module.exports = {
   BASE_URL,
+  HEADERS,
   getApiResults,
   flattenResult,
   getPlayersStats

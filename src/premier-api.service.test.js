@@ -1,7 +1,15 @@
-const superagent = require('superagent');
-const {BASE_URL, getApiResults, flattenResult, getPlayersStats} = require('./premier-api.service');
+const request = require('./request.service');
+const {BASE_URL, HEADERS, getApiResults, flattenResult, getPlayersStats} = require('./premier-api.service');
 
-jest.mock('superagent');
+const mockedCatch = {
+  catch: jest.fn((cb) => cb())
+};
+
+const mockedSet = {
+  set: jest.fn(() => mockedCatch)
+};
+
+jest.mock('./request.service');
 
 describe('Premier API Service', () => {
 
@@ -12,37 +20,37 @@ describe('Premier API Service', () => {
     });
 
     it('Should return an error when super agent throws', async () => {
-      superagent.get.mockRejectedValue(new Error('Error hapened!'));
+      request.get.mockRejectedValue(new Error('Error hapened!'));
       let result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(1);
+      expect(request.get).toHaveBeenCalledTimes(1);
       expect(result.err).toBeDefined();
       expect(result.err.message).toBe('Error hapened!');
     });
 
     it('Should return an error for invalid result', async () => {
-      superagent.get.mockResolvedValue({});
+      request.get.mockResolvedValue({});
       let result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(1);
+      expect(request.get).toHaveBeenCalledTimes(1);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {}});
+      request.get.mockResolvedValue({body: {}});
       result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(2);
+      expect(request.get).toHaveBeenCalledTimes(2);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {}}});
+      request.get.mockResolvedValue({body: {stats: {}}});
       result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(3);
+      expect(request.get).toHaveBeenCalledTimes(3);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {}}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {}}}});
       result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(4);
+      expect(request.get).toHaveBeenCalledTimes(4);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {content: []}}});
+      request.get.mockResolvedValue({body: {stats: {content: []}}});
       result = await getPlayersStats();
-      expect(superagent.get).toHaveBeenCalledTimes(5);
+      expect(request.get).toHaveBeenCalledTimes(5);
       expect(result.err).toBe('Invalid API result');
       
     });
@@ -50,26 +58,26 @@ describe('Premier API Service', () => {
     it('Should return empty contents when the results dont match flatten pattern', async () => {
       const content = ["Yay!"];
       const requestResult = {body: {stats: {pageInfo: {numPages: 0}, content}}};
-      superagent.get.mockResolvedValue(requestResult);
+      request.get.mockResolvedValue(requestResult);
       let result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(1);
-      expect(superagent.get).toHaveBeenNthCalledWith(1, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(1);
+      expect(request.get).toHaveBeenNthCalledWith(1, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([]);
 
       content.push({});
-      superagent.get.mockResolvedValue(requestResult);
+      request.get.mockResolvedValue(requestResult);
       result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(2);
-      expect(superagent.get).toHaveBeenNthCalledWith(2, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(2);
+      expect(request.get).toHaveBeenNthCalledWith(2, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([]);
 
       content.push({owner: {}});
-      superagent.get.mockResolvedValue(requestResult);
+      request.get.mockResolvedValue(requestResult);
       result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(3);
-      expect(superagent.get).toHaveBeenNthCalledWith(3, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(3);
+      expect(request.get).toHaveBeenNthCalledWith(3, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([]);
 
@@ -97,17 +105,17 @@ describe('Premier API Service', () => {
         rank: 1,
         goals: 1000
       }];
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 0}, content}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 0}, content}}});
       let result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(1);
-      expect(superagent.get).toHaveBeenNthCalledWith(1, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(1);
+      expect(request.get).toHaveBeenNthCalledWith(1, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual(flattenContent);
 
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 1}, content}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 1}, content}}});
       result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(2);
-      expect(superagent.get).toHaveBeenNthCalledWith(2, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(2);
+      expect(request.get).toHaveBeenNthCalledWith(2, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual(flattenContent);
     });
@@ -171,24 +179,24 @@ describe('Premier API Service', () => {
         rank: 2,
         goals: 365
       }];
-      superagent.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content1}}})
+      request.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content1}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content2}}});
       let result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(2);
-      expect(superagent.get).toHaveBeenNthCalledWith(1, BASE_URL + 0);
-      expect(superagent.get).toHaveBeenNthCalledWith(2, BASE_URL + 1);
+      expect(request.get.mock.calls.length).toBe(2);
+      expect(request.get).toHaveBeenNthCalledWith(1, BASE_URL + 0, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(2, BASE_URL + 1, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([...flattenContent1, ...flattenContent2]);
 
       
-      superagent.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content1}}})
+      request.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content1}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content2}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content3}}});
       result = await getPlayersStats();
-      expect(superagent.get.mock.calls.length).toBe(5);
-      expect(superagent.get).toHaveBeenNthCalledWith(3, BASE_URL + 0);
-      expect(superagent.get).toHaveBeenNthCalledWith(4, BASE_URL + 1);
-      expect(superagent.get).toHaveBeenNthCalledWith(5, BASE_URL + 2);
+      expect(request.get.mock.calls.length).toBe(5);
+      expect(request.get).toHaveBeenNthCalledWith(3, BASE_URL + 0, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(4, BASE_URL + 1, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(5, BASE_URL + 2, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([...flattenContent1, ...flattenContent2, ...flattenContent3]);
 
@@ -203,37 +211,37 @@ describe('Premier API Service', () => {
     });
 
     it('Should return an error when super agent throws', async () => {
-      superagent.get.mockRejectedValue(new Error('Error hapened!'));
+      request.get.mockRejectedValue(new Error('Error hapened!'));
       let result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(1);
+      expect(request.get).toHaveBeenCalledTimes(1);
       expect(result.err).toBeDefined();
       expect(result.err.message).toBe('Error hapened!');
     });
 
     it('Should return an error for invalid result', async () => {
-      superagent.get.mockResolvedValue({});
+      request.get.mockResolvedValue({});
       let result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(1);
+      expect(request.get).toHaveBeenCalledTimes(1);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {}});
+      request.get.mockResolvedValue({body: {}});
       result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(2);
+      expect(request.get).toHaveBeenCalledTimes(2);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {}}});
+      request.get.mockResolvedValue({body: {stats: {}}});
       result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(3);
+      expect(request.get).toHaveBeenCalledTimes(3);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {}}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {}}}});
       result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(4);
+      expect(request.get).toHaveBeenCalledTimes(4);
       expect(result.err).toBe('Invalid API result');
 
-      superagent.get.mockResolvedValue({body: {stats: {content: []}}});
+      request.get.mockResolvedValue({body: {stats: {content: []}}});
       result = await getApiResults();
-      expect(superagent.get).toHaveBeenCalledTimes(5);
+      expect(request.get).toHaveBeenCalledTimes(5);
       expect(result.err).toBe('Invalid API result');
       
     });
@@ -241,17 +249,17 @@ describe('Premier API Service', () => {
     
     it('Should return the content for only one page when pageInfo.numPages <= 1', async () => {
       const content = ["Yay!"];
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 0}, content}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 0}, content}}});
       let result = await getApiResults();
-      expect(superagent.get.mock.calls.length).toBe(1);
-      expect(superagent.get).toHaveBeenNthCalledWith(1, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(1);
+      expect(request.get).toHaveBeenNthCalledWith(1, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual(content);
 
-      superagent.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 1}, content}}});
+      request.get.mockResolvedValue({body: {stats: {pageInfo: {numPages: 1}, content}}});
       result = await getApiResults();
-      expect(superagent.get.mock.calls.length).toBe(2);
-      expect(superagent.get).toHaveBeenNthCalledWith(2, BASE_URL + 0);
+      expect(request.get.mock.calls.length).toBe(2);
+      expect(request.get).toHaveBeenNthCalledWith(2, BASE_URL + 0, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual(content);
     });
@@ -260,24 +268,24 @@ describe('Premier API Service', () => {
       const content1 = ["Page 1!"];
       const content2 = ["Page 2!"];
       const content3 = ["Page 3!"];
-      superagent.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content1}}})
+      request.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content1}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 2}, content: content2}}});
       let result = await getApiResults();
-      expect(superagent.get.mock.calls.length).toBe(2);
-      expect(superagent.get).toHaveBeenNthCalledWith(1, BASE_URL + 0);
-      expect(superagent.get).toHaveBeenNthCalledWith(2, BASE_URL + 1);
+      expect(request.get.mock.calls.length).toBe(2);
+      expect(request.get).toHaveBeenNthCalledWith(1, BASE_URL + 0, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(2, BASE_URL + 1, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([...content1, ...content2]);
 
       
-      superagent.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content1}}})
+      request.get.mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content1}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content2}}})
         .mockResolvedValueOnce({body: {stats: {pageInfo: {numPages: 3}, content: content3}}});
       result = await getApiResults();
-      expect(superagent.get.mock.calls.length).toBe(5);
-      expect(superagent.get).toHaveBeenNthCalledWith(3, BASE_URL + 0);
-      expect(superagent.get).toHaveBeenNthCalledWith(4, BASE_URL + 1);
-      expect(superagent.get).toHaveBeenNthCalledWith(5, BASE_URL + 2);
+      expect(request.get.mock.calls.length).toBe(5);
+      expect(request.get).toHaveBeenNthCalledWith(3, BASE_URL + 0, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(4, BASE_URL + 1, HEADERS);
+      expect(request.get).toHaveBeenNthCalledWith(5, BASE_URL + 2, HEADERS);
       expect(result.err).toBeUndefined();
       expect(result).toEqual([...content1, ...content2, ...content3]);
 
