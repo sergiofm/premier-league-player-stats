@@ -6,8 +6,7 @@ const HEADERS = { origin: "https://www.premierleague.com" };
 
 const getApiResults = async (pageNumber = 0) => {
   console.log('Scrapping page', pageNumber);
-  const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = 
-    await request.get(BASE_URL+pageNumber, HEADERS).catch(err => ({err}));
+  const {body: {stats: {pageInfo, content} = {}} = {stats: {}}, err} = await request.get(BASE_URL+pageNumber, HEADERS);
 
   if(err) return { err };
   if(!pageInfo || !content) return { err: 'Invalid API result' };
