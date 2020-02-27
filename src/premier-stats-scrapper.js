@@ -9,7 +9,7 @@ const sortByName = (a, b) => {
   return a.name.localeCompare(b.name);
 };
 
-const mapStats = (statsMap, player) => {
+const mapStats = (statsMap = {}, player = {}) => {
   const {nationality, rank, goals} = player;
   if(nationality){
     const stats = statsMap[nationality] || {
@@ -31,33 +31,37 @@ const mapStats = (statsMap, player) => {
     };
   }
   return statsMap;
-}
+};
 
 const exportStats = async () => {
   console.log('Starting Premier League Player Stats Scrapper...');
   const playersStats = await getPlayersStats();
   if (playersStats.err) {
     console.error('Error scrapping stats from API', playersStats.err);
-    return;
+    return playersStats;
+  }
+
+  if (!playersStats.length) {
+    return { err: 'Nothing to export!' };
   }
 
   const nationalitiesStatsMap = playersStats.reduce(mapStats, {});
   const nationalitiesStats = Object.values(nationalitiesStatsMap).sort(sortByName);
 
   console.log('Exporting Players Stats...');
-  const exportResult = await exportStatsToXLSX(playersStats.sort(sortByRank), nationalitiesStats).catch(err => ({
-    err
-  }));
+  const exportResult = exportStatsToXLSX(playersStats.sort(sortByRank), nationalitiesStats);
 
-  if (exportResult && exportResult.err) {
+  if (exportResult.err) {
     console.error('Error trying to export stats', exportResult.err);
-    return;
+    return exportResult;
   }
 
   console.log('Stats Exported Successfully!');
+  return 'OK';
 };
 
 module.exports = {
+  mapStats,
   exportStats
 };
 
